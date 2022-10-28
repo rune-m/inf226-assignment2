@@ -5,7 +5,6 @@ from markupsafe import escape
 
 conn = initialize_database()
 
-#TODO: Should escape?
 def search_messages(query):
     stmt = f"SELECT * FROM messages WHERE message GLOB ?;"
     result = f"Query: {pygmentize(stmt)}\n"
@@ -17,11 +16,28 @@ def search_messages(query):
     c.close()
     return result
 
-def send_message(sender, message):
-    stmt = f"INSERT INTO messages (sender, message) values (?, ?);"
+def send_message(sender, message, recipient, reply_to):
+    c = conn.cursor()
+    stmt = f"INSERT INTO messages (sender, message, recipient, reply_to) values (?, ?, ?, ?);"
     result = f"Query: {pygmentize(stmt)}\n"
-    conn.execute(stmt, (sender, message))
+    c.execute(stmt, (sender, message, recipient, reply_to))
     return result
+
+def get_all_messages(userId):
+    c = conn.cursor()
+    stmt = f"SELECT sender, recipient, reply_to, message FROM messages WHERE sender = ? OR recipient = ? OR recipient = '*';"
+    c = c.execute(stmt, (userId, userId))
+    anns = []
+    for row in c:
+        anns.append({'sender':escape(row[0]), 'recipient':escape(row[1]), 'reply_to': escape(row[2]), 'message': escape(row[3])})
+    return {'data':anns}
+
+def get_message(id, userId):
+    c = conn.cursor()
+    stmt = f"SELECT sender, recipient, reply_to, message FROM messages WHERE id = ? AND (sender = ? OR recipient = ? OR recipient = '*');"
+    c = c.execute(stmt, (id, userId, userId))
+    for row in c: 
+        return {'sender':escape(row[0]), 'recipient':escape(row[1]), 'reply_to': escape(row[2]), 'message': escape(row[3])}
 
 def get_announcements():
     stmt = f"SELECT author,text FROM announcements;"

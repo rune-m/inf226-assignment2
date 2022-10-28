@@ -9,9 +9,6 @@ from password_utils import check_password
 # TODO: Remove
 # alice password: password123
 # bob password: banana
-users = {'alice' : {'password' : '$2b$12$Zx3O9fGC74QXGqVcArpMaubLIPhXRIUElxIuUoj/baKVjbmQCas/m', 'salt': '$2b$12$Zx3O9fGC74QXGqVcArpMau', 'token' : 'tiktok'},
-         'bob' : {'password' : '2f1090dc18e0b0dc7c2afecf0a5f11d2b957e8a30cdc7cb17479987595a82443'}
-         }
 
 login_manager = flask_login.LoginManager()
 
@@ -26,7 +23,8 @@ class User(flask_login.UserMixin):
 # the User object for a given user id
 @login_manager.user_loader
 def user_loader(user_id):
-    if user_id not in users:
+    u = get_credentials(user_id)
+    if u is None:
         return
 
     # For a real app, we would load the User from a database or something
@@ -63,9 +61,9 @@ def request_loader(request):
         # you encode it in the token – see JWT (JSON Web Token), which
         # encodes credentials and (possibly) authorization info)
         print(f'Bearer auth: {auth_params}')
-        for uid in users:
-            if users[uid].get('token') == auth_params:
-                return user_loader(uid)
+        u = get_credentials(uid)
+        if u["token"] == auth_params:
+            return user_loader(uid)
     # For other authentication schemes, see
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
 

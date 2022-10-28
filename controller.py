@@ -1,14 +1,16 @@
 from flask import abort, request, send_from_directory, make_response, render_template, Blueprint
 import flask
+from requests import session
 from db_init import initialize_database
 from login_form import LoginForm
 from apsw import Error
 from login_manager import user_loader
 from password_utils import check_password
-from flask_login import login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 from apsw import Error
 from pygments.formatters import HtmlFormatter
-from db_service import get_announcements, get_credentials, search_messages, send_message
+from db_service import get_all_messages, get_announcements, get_credentials, search_messages, send_message, get_message
+from input_validator import valid_username
 
 conn = initialize_database()
 cssData = HtmlFormatter(nowrap=True).get_style_defs('.highlight')
@@ -23,12 +25,20 @@ def favicon_png():
     return send_from_directory(endpoints.root_path, 'favicon.png', mimetype='image/png')
 
 
-@endpoints.route('/')
+@endpoints.route('/oldMessages')
 @endpoints.route('/index.html')
 @login_required
 def index_html():
     return send_from_directory(endpoints.root_path,
                         'index.html', mimetype='text/html')
+
+@endpoints.route('/')
+@endpoints.route('/message')
+@endpoints.route('/message.html')
+@login_required
+def message_html():
+    return send_from_directory(endpoints.root_path,
+                        'message.html', mimetype='text/html')
 
 @endpoints.route('/login', methods=['GET', 'POST'])
 def login():
@@ -38,6 +48,8 @@ def login():
         print(request.form)
     if form.validate_on_submit():
         username = form.username.data
+        if not valid_username(username):
+            return render_template('./login.html', form=form)
         password = form.password.data
         u = get_credentials(username)
         if u and check_password(u["password"], password, u["salt"]):
@@ -48,7 +60,7 @@ def login():
 
             flask.flash('Logged in successfully.')
             
-            return flask.redirect(flask.url_for('endpoints.index_html'))
+            return flask.redirect(flask.url_for('endpoints.message_html'))
     return render_template('./login.html', form=form)
 
 @endpoints.route("/logout")
@@ -75,10 +87,48 @@ def send():
         message = request.args.get('message') or request.args.get('message')
         if not sender or not message:
             return f'ERROR: missing sender or message'
-        result = send_message(sender, message)
+        result = send_message(sender, message, '*', None)
         return f'{result}ok'
     except Error as e:
         return f'{result}ERROR: {e}'
+
+@endpoints.route('/new', methods=['POST'])
+@login_required
+def new_message():
+    try:
+        sender = request.args.get('sender') or request.form.get('sender')
+        message = request.args.get('message') or request.form.get('message')
+
+        if not sender or not message:
+            return f'ERROR: missing sender or message'
+
+        recipient = (request.args.get('recipients') or request.form.get('recipients')) or '*'
+        reply_to = request.args.get('reply_to') or request.form.get('reply_to')
+        
+        # TODO: Split recipients and send one message to each
+
+        result = send_message(sender, message, recipient, reply_to)
+        return f'{result}ok'
+    except Error as e:
+        return f'{result}ERROR: {e}'
+
+@endpoints.route('/messages', methods=['GET'])
+@login_required
+def all_messages():
+    try:
+        user_id = current_user.id
+        result = get_all_messages(user_id)
+        return result
+    except Error as e:
+        return f'{result}ERROR: {e}'
+
+@endpoints.route('/messages/<int:message_id>', methods=['GET'])
+@login_required
+def message(message_id):
+    id = message_id
+    user_id = current_user.id
+    message = get_message(id, user_id)
+    return message
 
 @endpoints.get('/announcements')
 @login_required

@@ -7,6 +7,7 @@ Security issues:
 - Secret key should be random. Alternatively be in a seperate environment file.
   - Generated random key
 - Users should not be in the source code. Passwords/tokens should be encrypted anyways.
+  - Initially, passwords was not even checked and you could log in to whatever account withouth giving any password
 - Easy to perform SQL injections.
   - Fixed with prepared statements
 - Navigating via a "next" parameter -> XSS?
@@ -18,6 +19,11 @@ Security issues:
     - Rune can send Anders a link with parameters for a message and if Anders is authenticated and clicks the link the message will be posted from Anders account
     - Removed next parameter to avoid CSRF
     - Next will remain in the URL, but wont do anything
+- Search function fetches users supplied messages and senders and is added to DOM
+  - Could be vulnerable to persistent XSS attack
+  - After checking, the output is automatically escaped -> no work done
+- When making new endpoints, we have to escape the output to avoid stored XSS
+- Sanitized messages in message.html
 
 Improvments of structure:
 
