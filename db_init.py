@@ -25,7 +25,11 @@ def initialize_database():
 
       c.execute('''INSERT INTO users
           VALUES ('1', 'alice', '$2b$12$Zx3O9fGC74QXGqVcArpMaubLIPhXRIUElxIuUoj/baKVjbmQCas/m',
-          '$2b$12$Zx3O9fGC74QXGqVcArpMau', 'tiktok');''')
+          '$2b$12$Zx3O9fGC74QXGqVcArpMau', '6hd+3m4i87!3894@49)RF=32489');''')
+    
+      c.execute('''INSERT INTO users
+          VALUES ('2', 'bob', '$2b$12$k4YwCPQ8MPWzJLIUApBoD.lJEtG8F6Om3mL6GbhKmjZhe9AXGYLWq',
+          '$2b$12$k4YwCPQ8MPWzJLIUApBoD.', 'b8!fjj4&r))djf4øv&0cbs/d3=3');''')
 
       return conn
   except Error as e:

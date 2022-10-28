@@ -5,6 +5,7 @@ from markupsafe import escape
 
 conn = initialize_database()
 
+#TODO: Should escape?
 def search_messages(query):
     stmt = f"SELECT * FROM messages WHERE message GLOB ?;"
     result = f"Query: {pygmentize(stmt)}\n"
