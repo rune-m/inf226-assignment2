@@ -3,10 +3,12 @@ import bcrypt
 def hash_password(password: str, salt: str):
     if salt == None or salt == '':
         salt = bcrypt.gensalt()
+        print("salt", salt)
     else:
         salt = salt.encode('utf-8')
     pass_encoded = password.encode('utf-8')
     hashed = bcrypt.hashpw(pass_encoded, salt)
+    print("hash", hashed)
     return hashed
 
 def check_password(correct_hash, password, salt):
