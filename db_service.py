@@ -5,10 +5,10 @@ from markupsafe import escape
 
 conn = initialize_database()
 
-def search_messages(query):
-    stmt = f"SELECT * FROM messages WHERE message GLOB ?;"
+def search_messages(query, user_id):
+    stmt = f"SELECT * FROM messages WHERE message GLOB ? AND (sender = ? OR recipient = ? OR recipient = '*');"
     result = f"Query: {pygmentize(stmt)}\n"
-    c = conn.execute(stmt, (query,))
+    c = conn.execute(stmt, (query, user_id, user_id))
     rows = c.fetchall()
     result = result + 'Result:\n'
     for row in rows:

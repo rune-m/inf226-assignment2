@@ -10,7 +10,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from apsw import Error
 from pygments.formatters import HtmlFormatter
 from db_service import get_all_messages, get_announcements, get_credentials, search_messages, send_message, get_message
-from input_validator import valid_username
+from input_validator import valid_username, valid_message, valid_recipients, valid_reply_to, valid_sender
 
 conn = initialize_database()
 cssData = HtmlFormatter(nowrap=True).get_style_defs('.highlight')
@@ -73,8 +73,9 @@ def logout():
 @login_required
 def search():
     query = request.args.get('q') or request.form.get('q') or '*'
+    user_id = current_user.id
     try:
-        result = search_messages(query)
+        result = search_messages(query, user_id)
         return result
     except Error as e:
         return (f'{result}ERROR: {e}', 500)
@@ -83,10 +84,12 @@ def search():
 @login_required
 def send():
     try:
-        sender = request.args.get('sender') or request.form.get('sender')
+        sender = current_user.id
         message = request.args.get('message') or request.args.get('message')
         if not sender or not message:
             return f'ERROR: missing sender or message'
+        if not valid_sender(sender) or not valid_message(message):
+            return f'ERROR: invalid sender or message'
         result = send_message(sender, message, '*', None)
         return f'{result}ok'
     except Error as e:
@@ -96,18 +99,24 @@ def send():
 @login_required
 def new_message():
     try:
-        sender = request.args.get('sender') or request.form.get('sender')
+        sender = current_user.id
         message = request.args.get('message') or request.form.get('message')
-
-        if not sender or not message:
-            return f'ERROR: missing sender or message'
-
-        recipient = (request.args.get('recipients') or request.form.get('recipients')) or '*'
         reply_to = request.args.get('reply_to') or request.form.get('reply_to')
+
+        if not message:
+            return f'ERROR: missing message'
+
+        if not valid_sender(sender) or not valid_message(message) or not valid_reply_to(reply_to):
+            return f'ERROR: invalid sender, message or reply'
+        
+        recipients = request.args.get('recipients') or request.form.get('recipients')
+        if not valid_recipients(recipients):
+            recipients = '' #TODO: if not valid => recipients = all recipients
         
         # TODO: Split recipients and send one message to each
 
-        result = send_message(sender, message, recipient, reply_to)
+        # Messages are currently not sent
+        result = send_message(sender, message, recipients, reply_to)
         return f'{result}ok'
     except Error as e:
         return f'{result}ERROR: {e}'

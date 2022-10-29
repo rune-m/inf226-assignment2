@@ -23,3 +23,7 @@ def valid_sender(sender):
 
 def valid_reply_to(reply_to):
     return valid_username(reply_to)
+
+#TODO: Should validate that the string is legal list of recipients (should call "valid_recipient")
+def valid_recipients(recipients):
+    return True
