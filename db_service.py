@@ -1,4 +1,5 @@
 from db_init import initialize_database
+from password_utils import hash_password
 from utils import pygmentize
 from json import dumps
 from markupsafe import escape
@@ -18,18 +19,18 @@ def search_messages(query, user_id):
 
 def send_message(sender, message, recipient, reply_to):
     c = conn.cursor()
-    stmt = f"INSERT INTO messages (sender, message, recipient, reply_to) values (?, ?, ?, ?);"
+    stmt = f"INSERT INTO messages (sender, message, recipient, reply_to, timestamp) values (?, ?, ?, ?, datetime('now', 'localtime'));"
     result = f"Query: {pygmentize(stmt)}\n"
     c.execute(stmt, (sender, message, recipient, reply_to))
     return result
 
 def get_all_messages(userId):
     c = conn.cursor()
-    stmt = f"SELECT sender, recipient, reply_to, message FROM messages WHERE sender = ? OR recipient = ? OR recipient = '*';"
+    stmt = f"SELECT sender, recipient, reply_to, message, timestamp, id FROM messages WHERE sender = ? OR recipient = ? OR recipient = '*';"
     c = c.execute(stmt, (userId, userId))
     anns = []
     for row in c:
-        anns.append({'sender':escape(row[0]), 'recipient':escape(row[1]), 'reply_to': escape(row[2]), 'message': escape(row[3])})
+        anns.append({'sender':escape(row[0]), 'recipient':escape(row[1]), 'reply_to': escape(row[2]), 'message': escape(row[3]), 'timestamp': escape(row[4]), 'id': escape(row[5])})
     return {'data':anns}
 
 def get_message(id, userId):
@@ -52,3 +53,10 @@ def get_credentials(username):
     c = conn.execute(stmt, (username,))
     for row in c:
       return {'username': row[0], 'password': row[1], 'salt': row[2]}
+
+def create_user(username, password):
+    (hash, salt) = hash_password(password, salt=None)
+    c = conn.cursor()
+    stmt = f"INSERT INTO users (username, password, salt, token) values (?, ?, ?, ?);"
+    c.execute(stmt, (username, hash, salt, 'token?'))
+    return

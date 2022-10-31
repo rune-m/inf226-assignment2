@@ -22,8 +22,13 @@ def valid_sender(sender):
     return valid_username(sender)
 
 def valid_reply_to(reply_to):
-    return valid_username(reply_to)
+    print("reply to type", type(reply_to))
+    # return reply_to == None or valid_username(reply_to)
+    return True
 
-#TODO: Should validate that the string is legal list of recipients (should call "valid_recipient")
 def valid_recipients(recipients):
+    recipients_list = recipients.split(' ')
+    for recipient in recipients_list:
+        if not valid_recipient(recipient):
+            return False
     return True

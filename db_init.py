@@ -15,8 +15,9 @@ def initialize_database():
           id integer PRIMARY KEY, 
           sender TEXT NOT NULL,
           recipient TEXT,
-          reply_to TEXT,
-          message TEXT NOT NULL);''')
+          reply_to integer,
+          message TEXT NOT NULL,
+          timestamp TEXT NOT NULL);''')
       c.execute('''CREATE TABLE IF NOT EXISTS announcements (
           id integer PRIMARY KEY, 
           author TEXT NOT NULL,

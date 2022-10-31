@@ -8,7 +8,12 @@ app = Flask(__name__)
 app.register_blueprint(endpoints)
 
 # Generate secret server key
-app.secret_key = secrets.token_hex(16)
+app.config.update(
+    SECRET_KEY=secrets.token_hex(16),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Strict",
+    SESSION_COOKIE_SECURE=True
+)
 
 # Add a login manager to the app
 login_manager.init_app(app)

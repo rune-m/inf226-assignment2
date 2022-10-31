@@ -76,14 +76,11 @@
       <marquee>
         <div id="header"></div>
       </marquee>
-      <main>
+      <main id="main">
         <pre id="output"></pre>
       </main>
-      <form
-        id="controls"
-        onsubmit="() => send(senderField.value, messageField.value, recipientsField.value)"
-      >
-        <label for="recipients">Recipients:</label>
+      <form id="controls">
+        <label id="recipientsLabel" for="recipients">Recipients:</label>
         <input
           type="text"
           id="recipients"
@@ -95,12 +92,14 @@
         <label for="message">Message:</label>
         <textarea
           id="message"
+          name="message"
           style="grid-row: span 4"
           minlength="1"
           maxlength="160"
           required
         ></textarea>
-        <button type="submit" id="sendBtn">Send</button>
+        <input type="hidden" id="reply_to" name="reply_to" value="" />
+        <button type="button" id="sendBtn">Send</button>
       </form>
       <div id="anchor"></div>
     </div>
@@ -116,6 +115,11 @@
     var allBtn = document.getElementById("allBtn");
     var output = document.getElementById("output");
     var header = document.getElementById("header");
+    var replyField = document.getElementById("reply_to");
+    var recipientsLabel = document.getElementById("recipientsLabel");
+
+    var csrf_token = "{{ csrf_token() }}";
+    console.log("token", csrf_token);
 
     var getAllMessages = async () => {
       const id = reqId++;
@@ -124,14 +128,26 @@
       const body = document.createElement("span");
       data = await res.text();
       json = JSON.parse(data);
-      messages = json.data;
+      let messages = json.data;
       const sanitizer = new Sanitizer();
+
+      console.log(messages);
+
+      output.setHTML("");
+
+      // Sorting messages by timestamp
+      messages = messages.sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
 
       messages.forEach((m) => {
         headerElement = document.createElement("h3");
         senderElement = document.createElement("p");
         recipientElement = document.createElement("p");
         messageElement = document.createElement("p");
+        timestampElement = document.createElement("p");
+        replyButton = document.createElement("button");
         headerElement.setHTML("Message:", { sanitizer });
         messageElement.setHTML(`Message: ${m.message}`, { sanitizer });
         senderElement.setHTML(`From: ${m.sender}`, { sanitizer });
@@ -139,10 +155,17 @@
           `To: ${m.recipient === "*" ? "All" : m.recipient}`,
           { sanitizer }
         );
+        timestampElement.setHTML(
+          `When: ${new Date(m.timestamp).toString().substring(0, 24)}`
+        );
+        replyButton.textContent = "Reply";
+        replyButton.onclick = () => (replyField.value = m.id);
         body.appendChild(headerElement);
         body.appendChild(senderElement);
         body.appendChild(recipientElement);
         body.appendChild(messageElement);
+        body.appendChild(timestampElement);
+        body.appendChild(replyButton);
       });
 
       output.appendChild(body);
@@ -154,34 +177,25 @@
       anchor.scrollIntoView();
     };
 
-    var send = async (message, recipients) => {
+    var send = async (message, recipients, reply) => {
       const id = reqId++;
       const q = `/new?message=${encodeURIComponent(
         message
-      )}&recipients=${encodeURIComponent(recipients)}`;
+      )}&recipients=${encodeURIComponent(
+        recipients
+      )}&reply_to=${encodeURIComponent(reply)}`;
       res = await fetch(q, { method: "post" });
-      console.log(res);
-      const head = document.createElement("h3");
-      head.textContent = `[${id}]  ${q} → ${res.status} ${res.statusText}`;
-      //   output.appendChild(head);
-      const body = document.createElement("p");
-      body.innerHTML = await res.text();
-      //   output.appendChild(body);
-      body.scrollIntoView({
-        block: "end",
-        inline: "nearest",
-        behavior: "smooth",
-      });
-      anchor.scrollIntoView();
-      output.setHTML("", { sanitizer });
       getAllMessages();
-      //   checkAnnouncements();
+      recipientsField.value = "";
+      messageField.value = "";
     };
 
     sendBtn.addEventListener("click", () =>
-      send(messageField.value, recipientsField.value)
+      send(messageField.value, recipientsField.value, replyField.value)
     );
 
     getAllMessages();
   </script>
 </html>
+
+<!-- style="grid-row: span 4" -->
