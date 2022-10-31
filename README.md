@@ -1,5 +1,11 @@
 # INF226 - Assignment 2+3
 
+# TODO for security stuff:
+
+HTML and JS check to see if there are more XSS stuff
+Make sure user initiates all requests: CSRF
+Look at cookies. Are all the correct flags set?
+
 ## Refactoring
 
 Security issues:
@@ -15,6 +21,7 @@ Security issues:
   - User can access all endpoints without being logged in
     - We added message without being logged in
     - Fixed by enforcing that users has to be logged in to use endpoints
+    - Not necessairy for coffe, favicon and CSS (CSS already available when inspecting the page)
   - Cross site request forgery
     - Rune can send Anders a link with parameters for a message and if Anders is authenticated and clicks the link the message will be posted from Anders account
     - Removed next parameter to avoid CSRF
@@ -23,7 +30,26 @@ Security issues:
   - Could be vulnerable to persistent XSS attack
   - After checking, the output is automatically escaped -> no work done
 - When making new endpoints, we have to escape the output to avoid stored XSS
-- Sanitized messages in message.html
+
+- Some variables are used directly in html
+
+  - Sanitized messages in message.html (must check if there are more
+  - Must check all HTML and JS code to see if there are more XSS faults
+
+- Bearer token is not secure as it is not encrypted. A packet sniffer can take token and be authorized on server.
+
+  - Not mentioned in text and hard to test, so this is not fixed
+
+- We have tried to validate all input to enforce the invariants of the domain.
+  - Should have made domain primitives but not enough time
+
+Access control:
+
+- Can send messages as anybody
+  - Removed "From" input and rather used the currently logged in user id
+- No check when fetching messages from db -> everyone can see everything
+  - Fixed so that user only sees messages that are sent by the user or to the user
+- No check on announcements as they should be seen by all
 
 Improvments of structure:
 
