@@ -1,4 +1,4 @@
-# INF226 - Assignment 2+3
+# INF226 - Assignment 2
 
 ## Design considerations
 
