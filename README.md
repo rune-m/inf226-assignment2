@@ -1,10 +1,12 @@
 # INF226 - Assignment 2+3
 
-## Improvments of Structure
+## Design considerations
+
+### Improvments of Structure
 
 - First thing we saw was that the project was badly structured. Code that is badly structured are harder to maintain and is vulnerable to bugs which could negatively impact the safety of the application and its users. We therefore started with restructuring the application to make it easier to maintain and improve
 
-### Main Components of New Structure
+#### Main Components of New Structure
 
 - controller.py
   - This files includes all endpoints for the application
@@ -19,18 +21,21 @@
 - input_validator.py
   - Methods for validating user input
 - utils.py
-
   - Extra util methods
+- templates folder
+  - All HTML templates
+- static/js folder
+  - All JavaScript logic for the templates
 
 app.py now only contains functionality for initializing the application. There are some additional files that are used as utilities for other files but the main components are covered above.
 
-## Initial Security Issues
+### Initial Security Issues
 
-- First thing we found was that the secret key was not random and was stored directly in the source code. That made it so that everyone that could see the source code, would know the secret key. This left the application vulnerable to session hijacking by making the session cookies easier to guess
+- Another problem that we found was that the secret key was not random and was stored directly in the source code. That made it so that everyone that could see the source code, would know the secret key. This left the application vulnerable to session hijacking by making the session cookies easier to guess
 
 - The next big security flaw was that users was stored directly in the source code. The result being that everyone that had access to the source code would be able to see all of the user information. This problem was very critical since password was not even encrypted and was stored as plain text inside of the user object
 
-- There was no Authentication implemented and a user could type whatever username they wanted and log in to said account
+- There was no Authentication implemented and a user could type whatever username they wanted and log in to said account without the password being considered. This might be a result of the insecure and messy design of the application leading to small bugs like this.
 
 - There was clear SQL injection vulnerabilites as data which originated from user input was concatanated directly into SQL statement strings
 
@@ -46,7 +51,13 @@ app.py now only contains functionality for initializing the application. There a
 
 - The search function fetches user supplied messages from the database and adds them to the DOM. If this data is not escaped, the applicaton is vulnerable to persistent XSS attacks
 
-## Refactoring to Address the Inital Security Issues
+- Some variables was used directly inside of the HTML leaving the application vulnerable to XSS attacks. Another problem was that "innerHtml" was used despite being notoriusly problematic when it comes to XSS
+
+- No validation on input and invariants are not enforced
+
+- No logging which makes it very hard to trace attacks that may occur
+
+### Refactoring to Address the Inital Security Issues
 
 - One option would be to store the key in some environment file that makes it somewhat more hidden. The problem with this approach is that
   the key would still be vulnerable to brute force attacks and if an attacker gets the key, all sesions would be vulnerable. Therefore we made the key random
@@ -69,23 +80,126 @@ app.py now only contains functionality for initializing the application. There a
 
 - We investagated whether results from searching messages are automatically escaped and we found that they are. As the data is escaped, we did not do any more to avoid persistent XSS as Flask seemingly does it for us
 
-## Refactoring (NOT written nicely yet)
+- To address the XSS vulnerability we got rid of all "innerHtml" calls and replaced them with "setHTML" which automatically sanitizes the data. Instanses of setting "textContent" was ignored as it ignores all markup and is therefore safe. The variables that was used directly in the HTML was also sanitized to avoid them being interpreted as anything more than data.
 
-Security issues:
+- We have made some inputvalidation logic, to enforce some invariants. The problem is that the task is very open so defining these constraints were quite difficult. In another setting one would ask a lot of questions to some domain expert to get a comprehensive understanding of the domain which the system represents but this was not possible for the given context. We have therefore only made some primitive validation logic. In a real setting we should have defined domain primitives and added the constraints to the constructors. This would ensure that all objects conformed to the given constraints.
 
-- When making new endpoints, we have to escape the output to avoid stored XSS
+- Added some logging. The logs are stored seperately in its own file. The logs contains no sensitive information. In a real world setting, more thought and work must go into logging
 
-- Some variables are used directly in html
+### Comments
 
-  - Sanitized messages in message.html (must check if there are more
-  - Must check all HTML and JS code to see if there are more XSS faults
-  - Removed innerHTML and replaces with setHTML which does not render complete markup
-    - setHtml parses and sanitizes input
-    - All user input that is present in the DOM is santized or set via textcontent which is safe
+We also found that the implementation of the bearer token was quite problematic. The token was not encrypted and could therefore be picked up by some packet sniffer. In this application we use session cookies and have not focused on the bearer token implementation. When looking into it we realized it was quite hard to test as the application always used session cookies and never used the bearer token logic. Another thing which is not addresses is logic to handle DDOS like IP based rate limiting. This is quite complicated and therefore not implemented
 
-- Bearer token is not secure as it is not encrypted. A packet sniffer can take token and be authorized on server.
+## Features of our application
 
-  - Not mentioned in text and hard to test, so this is not fixed
+We have kept the original message page (with updated logic to address security concerns) and have made a new page to contain the logic for the new messaging API.
 
-- We have tried to validate all input to enforce the invariants of the domain.
-  - Should have made domain primitives but not enough time
+The old message page is at /oldMessages and /index.html. The new is at / and /message.
+
+- Users can add an account
+  - Passwords will be stored securely (hashed with salt)
+  - Passwords must contain at least: 8 characters, one uppercase letter, one lowercase letter, one number
+- Users can log in and out of accounts
+  - Log in enforces correct email and password
+- Users are stored in a database
+  - Passwords not stored as plaintext
+
+### Old messaging page
+
+- Users can send messages to everyone or specific people (can be multiple)
+  - The sent messages are stored in a database
+  - Users are automatically set as sender of a sent message
+- Users can show all messages that are sent by them, to them or to all
+- Users can search messages and will se messages that are sent by them, to them or to all that also matches the provided pattern
+
+### New messaging page
+
+- Users can send messages to everyone or one or multiple persons
+  - The sent messages are stored in a database
+  - Users are automatically set as sender of a sent message
+- Users can reply to messages
+- Users can show all messages that are sent by them, to them or to all
+- Can logout via button
+
+## Instructions on how to test and demo
+
+- To run application, do "flask run"
+- Go to <http://127.0.0.1:5000/> with Chrome or Edge (Santizer not compatible with other browsers)
+- Valid usernames and passwords:
+  - alice : password123
+  - bob : banana
+
+## Techincal details of implementation
+
+- Uses the Flask framework
+  - Manages sessions
+- SQLite as database
+
+## Answers to Questions
+
+### Who might attack the application?
+
+- Attackers might be interested in seeing the messages that the attacker is not authorized to see
+  - Originally there was no access control or no authorization in place
+  - Attackers could do whatever they wanted
+- Attackers might want to get hold of the users passwords
+  - Originally, passwords was stored in the source code in plain text
+  - Problematic as users often use same passwords for multiple purposes
+  - Attackers could perform some clever SQL injection attacks to see the passwords in plaintext from db
+- An attacker might want to trick the system into acting on behalf of another user
+  - No validation of passwords. Attacker could simply choose what username to be logged in as
+    - Did not even have to log in to send requests to some of the endpoints
+  - Originally, user sets the sender (NO INTEGRITY!). An attacker could simply put another username as sender
+  - The original application had minimal protection against CSRF. Attacker could use this to trick people into sending unintended messages.
+  - Attacker could do session hijacking as the secret key was not secure
+- At attacker might want to crash or make the application inaccessible
+  - Could perform SQL injection as there was no measures for stopping this
+  - Could perform XSS attacks as there was no measures for stopping this
+  - Could perform DDOS attakcs as there was no measures for stopping this
+
+#### What damage could be done?
+
+Confidentiality:
+
+- Reading private messages and passwords.
+
+Integrity:
+
+- Sending a message from another users account.
+- Tricking a user into sending a message through CSRF
+
+Availability:
+
+- DDOS attack
+- Deleting content using injection (SQL or XSS).
+
+### Attack vectors
+
+The original application had several attack vectors
+
+- Injections (SQL, XSS)
+- CSRF
+- DDOS
+- Cryptgraphic failures (No encryption)
+- Breaking access control
+- Identification and Authentication Failures (Almost no authenticaiton in place)
+- Session hijacking
+- Insecure design (Messy design with may lead to security flaws like not checking passwords)
+- Security misconfiguration (bad secret key, cookie header not set, etc)
+- Security Logging and Monitoring Failures (no logging implemented)
+
+### What have you done to protect against attacks?
+
+See [Refactoring to Address the Inital Security Issues](#refactoring-to-address-the-inital-security-issues)
+
+### Access control
+
+Relationship-Based Access Control (ReBAC)
+
+- Users can only view public messages or their own messages (messages from/to the user).
+
+### How can you know that you security is good enough?
+
+It is hard to know if the application is secure enough before deploying it on the internet. We have tried to fix most security issues we know about but there is a high chance that people will find security holes in the application at some point, and possibly exploit them.
+
+We have added some logging (should be a lot more logging in a real-life application). This can be a way of tracing potential security issues that occur.

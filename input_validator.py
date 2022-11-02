@@ -1,4 +1,5 @@
 import string
+import re
 
 def valid_username(username):
     if not (len(username) >=3 and len(username) <=25):
@@ -22,9 +23,7 @@ def valid_sender(sender):
     return valid_username(sender)
 
 def valid_reply_to(reply_to):
-    print("reply to type", type(reply_to))
-    # return reply_to == None or valid_username(reply_to)
-    return True
+    return reply_to.isdigit() or reply_to == ''
 
 def valid_recipients(recipients):
     recipients_list = recipients.split(' ')
@@ -32,3 +31,7 @@ def valid_recipients(recipients):
         if not valid_recipient(recipient):
             return False
     return True
+
+def valid_password(password):
+    # At least: 8 characters, one uppercase letter, one lowercase letter, one number
+    return re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$", password)

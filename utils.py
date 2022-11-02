@@ -16,3 +16,8 @@ def pygmentize(text):
         tls.lexer.add_filter(NameHighlightFilter(names=['text'], tokentype=token.Name))
         tls.lexer.add_filter(KeywordCaseFilter(case='upper'))
     return f'<span class="highlight">{highlight(text, tls.lexer, tls.formatter)}</span>'
+
+def log(text):
+    f = open("logging.txt", "a")
+    f.write(text + "\n")
+    f.close()

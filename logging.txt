@@ -1,0 +1,96 @@
+alice attempts to log in
+alice logged in
+alice request all messages
+http://127.0.0.1:5000/message: sender: alice, message: asbdhjkasd, replyto: , recipients: bob alice
+alice request all messages
+alice logged out
+alice attempts to log in
+alice logged in
+alice request all messages
+alice request all messages
+http://127.0.0.1:5000/message: sender: alice, message: asbhdj, replyto: , recipients: 
+alice request all messages
+alice attempts to log in
+alice logged in
+alice request all messages
+http://127.0.0.1:5000/new: sender: alice, message: as ndm, replyto: , recipients: asbjhdk
+alice request all messages
+alice request all messages
+alice request all messages
+alice request all messages
+alice logged out
+alice attempts to log in
+alice logged in
+alice request all messages
+alice request all messages
+alice request all messages
+bob attempts to log in
+bob logged in
+bob request all messages
+http://127.0.0.1:5000/new: sender: alice, message: hi bob, replyto: , recipients: bob
+alice request all messages
+bob request all messages
+http://127.0.0.1:5000/new: sender: bob, message: hi alice, replyto: , recipients: alice
+Login attempt: username: bob
+bob logged in
+bob request all messages
+bob request all messages
+http://127.0.0.1:5000/message: sender: bob, message: halla, replyto: , recipients: alice
+bob request all messages
+Login attempt: username: alice
+alice logged in
+alice request all messages
+alice request all messages
+bob request all messages
+bob request all messages
+bob request all messages
+bob request all messages
+bob request all messages
+bob request all messages
+bob request all messages
+bob logged out
+Create attempt: username: charlie, password: qwerty123
+User charlie was created
+charlie request all messages
+http://127.0.0.1:5000/new: sender: charlie, message: hi, replyto: , recipients: 
+charlie request all messages
+alice request all messages
+alice request all messages
+Login attempt: username: yoyoyo
+invalid password for user: yoyoyo
+Create attempt: username: yoyoyo, password: qwerty123
+User yoyoyo was created
+yoyoyo request all messages
+http://127.0.0.1:5000/new: sender: yoyoyo, message: hhi charlie. You bit my finger, replyto: , recipients: charlie
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+charlie request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+yoyoyo request all messages
+Create attempt: username: bseiufsfs
+Password not strong enough
+User bseiufsfs was created
+bseiufsfs request all messages
+Create attempt: username: ansbjdk
+Password not strong enough
+Create attempt: username: ansbjdk
+Password not strong enough
+Create attempt: username: ansbjdk
+User ansbjdk was created
+ansbjdk request all messages
+ansbjdk request all messages
+ansbjdk request all messages
+ansbjdk request all messages
+ansbjdk logged out

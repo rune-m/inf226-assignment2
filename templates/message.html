@@ -83,11 +83,11 @@
         <dl>
           {{ form.csrf_token }}
 
-          <dt>Recipients:</dt>
+          <dt id="recipientsLabel">Recipients:</dt>
           <dd>{{ form.recipients }}</dd>
           <dt>Message:</dt>
           <dd>{{ form.message }}</dd>
-          <dd id="reply_to">{{ form.replyto }}</dd>
+          <dd>{{ form.replyto }}</dd>
         </dl>
 
         <p>
@@ -95,9 +95,12 @@
         </p>
       </form>
       <div id="anchor"></div>
+      <form action="/logout">
+        <button type="submit">Log out</button>
+      </form>
     </div>
   </body>
-  <script src="{{ url_for('static', filename='js/flmessage.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/message.js') }}"></script>
 </html>
 
 <!-- style="grid-row: span 4" -->

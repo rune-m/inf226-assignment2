@@ -8,8 +8,9 @@ var sendBtn = document.getElementById("sendBtn");
 var allBtn = document.getElementById("allBtn");
 var output = document.getElementById("output");
 var header = document.getElementById("header");
-var replyField = document.getElementById("reply_to");
+var replyField = document.getElementById("replyto");
 var recipientsLabel = document.getElementById("recipientsLabel");
+var recipientsInputField = document.getElementById("recipients");
 
 var getAllMessages = async () => {
   const id = reqId++;
@@ -20,8 +21,6 @@ var getAllMessages = async () => {
   json = JSON.parse(data);
   let messages = json.data;
   const sanitizer = new Sanitizer();
-
-  console.log(messages);
 
   output.setHTML("");
 
@@ -36,8 +35,15 @@ var getAllMessages = async () => {
     recipientElement = document.createElement("p");
     messageElement = document.createElement("p");
     timestampElement = document.createElement("p");
+    replyToElement = document.createElement("p");
     replyButton = document.createElement("button");
-    headerElement.setHTML("Message:", { sanitizer });
+
+    replyToText = "";
+    if (m && m.reply_to !== "") {
+      replyToText = ` (Reply to message ${m.reply_to})`;
+    }
+
+    headerElement.setHTML(`Message ${m.id}${replyToText}`, { sanitizer });
     messageElement.setHTML(`Message: ${m.message}`, { sanitizer });
     senderElement.setHTML(`From: ${m.sender}`, { sanitizer });
     recipientElement.setHTML(
@@ -48,12 +54,29 @@ var getAllMessages = async () => {
       `When: ${new Date(m.timestamp).toString().substring(0, 24)}`
     );
     replyButton.textContent = "Reply";
-    replyButton.onclick = () => (replyField.value = m.id);
+    replyButton.onclick = () => {
+      replyField.value = m.id;
+      recipientsLabel.textContent = `Replying to message ${m.id}...`;
+
+      const cancelButton = document.createElement("button");
+      cancelButton.textContent = "Cancel";
+      cancelButton.type = "button";
+      cancelButton.onclick = () => {
+        recipientsLabel.setHTML("");
+        recipientsLabel.textContent = "Recipients:";
+        recipientsInputField.hidden = 0;
+        replyField.value = "";
+      };
+
+      recipientsLabel.appendChild(cancelButton);
+      recipientsInputField.hidden = 1;
+    };
     body.appendChild(headerElement);
     body.appendChild(senderElement);
     body.appendChild(recipientElement);
     body.appendChild(messageElement);
     body.appendChild(timestampElement);
+    body.appendChild(replyToElement);
     body.appendChild(replyButton);
   });
 
@@ -65,22 +88,5 @@ var getAllMessages = async () => {
   });
   anchor.scrollIntoView();
 };
-
-// var send = async (message, recipients, reply) => {
-//   const id = reqId++;
-//   const q = `/new?message=${encodeURIComponent(
-//     message
-//   )}&recipients=${encodeURIComponent(recipients)}&reply_to=${encodeURIComponent(
-//     reply
-//   )}`;
-//   res = await fetch(q, { method: "post" });
-//   getAllMessages();
-//   recipientsField.value = "";
-//   messageField.value = "";
-// };
-
-// sendBtn.addEventListener("click", () =>
-//   send(messageField.value, recipientsField.value, replyField.value)
-// );
 
 getAllMessages();
