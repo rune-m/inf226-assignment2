@@ -94,3 +94,8 @@ ansbjdk request all messages
 ansbjdk request all messages
 ansbjdk request all messages
 ansbjdk logged out
+Login attempt: username: alice
+invalid password for user: alice
+Login attempt: username: alice
+alice logged in
+alice request all messages

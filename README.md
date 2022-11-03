@@ -133,7 +133,13 @@ The old message page is at /oldMessages and /index.html. The new is at / and /me
 
 - Uses the Flask framework
   - Manages sessions
-- SQLite as database
+  - Used flask forms for our forms because they make it easy to send CSRF tokens
+- Passwords are encrypted using bcrypt with salting
+- Users, messages and announcements are stored in an SQL lite database
+  - Application inserts some users on initialization
+- The application logs security events into logging.txt file
+- Application does some basic input validation
+- Application can be ran through docker
 
 ## Answers to Questions
 
