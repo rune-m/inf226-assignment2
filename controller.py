@@ -173,34 +173,6 @@ def send():
     except Error as e:
         return f'{result}ERROR: {e}'
 
-# @endpoints.route('/new', methods=['POST'])
-# @login_required
-# def new_message():
-#     try:
-#         sender = current_user.id
-#         message = request.args.get('message') or request.form.get('message')
-#         reply_to = request.args.get('reply_to') or request.form.get('reply_to')
-
-#         if not message:
-#             return f'ERROR: missing message'
-
-#         if not valid_sender(sender) or not valid_message(message) or not valid_reply_to(reply_to):
-#             return f'ERROR: invalid sender, message or reply'
-        
-#         recipients = request.args.get('recipients') or request.form.get('recipients')
-#         if recipients == None or recipients.strip() == '':
-#             send_message(sender, message, '*', reply_to)
-#             return 'ok'
-#         if not valid_recipients(recipients):
-#             return f'ERROR: Not valid recipients'
-#         else:
-#             recipients_list = dict.fromkeys(recipients.split(' '))
-#             for recipient in recipients_list:
-#                 send_message(sender, message, recipient, reply_to)
-#         return f'ok'
-#     except Error as e:
-#         return f'ERROR: {e}'
-
 @endpoints.route('/messages', methods=['GET'])
 @login_required
 def all_messages():

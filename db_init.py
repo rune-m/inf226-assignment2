@@ -28,6 +28,8 @@ def initialize_database():
           salt TEXT NOT NULL,
           token TEXT NOT NULL);''')
 
+
+    # Only for testing purposes
       c.execute('''INSERT INTO users
            VALUES ('alice', '$2b$12$Zx3O9fGC74QXGqVcArpMaubLIPhXRIUElxIuUoj/baKVjbmQCas/m',
            '$2b$12$Zx3O9fGC74QXGqVcArpMau', '6hd+3m4i87!3894@49)RF=32489');''')

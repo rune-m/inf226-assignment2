@@ -4,7 +4,7 @@
 
 ### Improvments of Structure
 
-- First thing we saw was that the project was badly structured. Code that is badly structured are harder to maintain and is vulnerable to bugs which could negatively impact the safety of the application and its users. We therefore started with restructuring the application to make it easier to maintain and improve
+- First thing we saw was that the project was badly structured. Code that is badly structured are harder to maintain and is vulnerable to bugs which could negatively impact the security of the application and its users. We therefore started with restructuring the application to make it easier to maintain and improve
 
 #### Main Components of New Structure
 
@@ -41,7 +41,7 @@ app.py now only contains functionality for initializing the application. There a
 
 - We found severel authorization vulneraibilites. Firstly, users could access some critical endpoints without being logged in. Users could add messages and read messages without logging in which breaks the confidentiality of our application
 
-- The next parameter can potentially be dangerous as an attacker may be able to make an URL which changes the state on behalf of other user. We checked that the url is escaped, but it can still be dangerous. As an example did we manage to construct a URL that posted a new message when clicked on by authorized user. It basically made it very easy to perform cross site request forgeries
+- The 'next' URL-parameter can potentially be dangerous as an attacker may be able to make an URL which changes the state on behalf of other user. We checked that the url is escaped, but it can still be dangerous. As an example did we manage to construct a URL that posted a new message when clicked on by authorized user. It basically made it very easy to perform cross site request forgeries
 
 - The application had no access controll which is very problematic as private messages could be viewed by all users in the system. Another problem was that a user can be sent from anybody as the users wrote who the message was from
 
@@ -88,7 +88,7 @@ app.py now only contains functionality for initializing the application. There a
 
 ### Comments
 
-We also found that the implementation of the bearer token was quite problematic. The token was not encrypted and could therefore be picked up by some packet sniffer. In this application we use session cookies and have not focused on the bearer token implementation. When looking into it we realized it was quite hard to test as the application always used session cookies and never used the bearer token logic. Another thing which is not addresses is logic to handle DDOS like IP based rate limiting. This is quite complicated and therefore not implemented
+We also found that the implementation of the bearer token was quite problematic. The token was not encrypted and could therefore be picked up by some packet sniffer. In this application we use session cookies and have not focused on the bearer token implementation. When looking into it we realized it was quite hard to test as the application always used session cookies and never used the bearer token logic. Another thing which is not addresses is logic to handle DDOS like IP based rate limiting. This is quite complicated and therefore not implemented. We have not implemented anything https-related (except setting secure on cookie), as this is complicated and we were told that we could assume https was configured.
 
 ## Features of our application
 
@@ -178,6 +178,10 @@ Availability:
 
 - DDOS attack
 - Deleting content using injection (SQL or XSS).
+
+### Limits
+
+Originally there was very few limits and and an attacker could do a lot of damage without too much work. Some XSS would have been avoided due to some of the methods that was used to interact with the DOM was safe in terms of XSS. The implementation had a vast amount of security problems which resulted in a very insecure application. In this application there is a lot of input coming from the user, which makes it hard to ensure security across the entire application. We are also limited to protecting against the vulnerarbilities which we have identified, but there might be more that has been overlooked.
 
 ### Attack vectors
 
