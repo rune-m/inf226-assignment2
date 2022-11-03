@@ -6,28 +6,17 @@ from werkzeug.datastructures import WWWAuthenticate
 from db_service import get_credentials
 from password_utils import check_password
 
-# TODO: Remove
-# alice password: password123
-# bob password: banana
-
 login_manager = flask_login.LoginManager()
 
-# Class to store user info
-# UserMixin provides us with an `id` field and the necessary
-# methods (`is_authenticated`, `is_active`, `is_anonymous` and `get_id()`)
 class User(flask_login.UserMixin):
     pass
 
-
-# This method is called whenever the login manager needs to get
-# the User object for a given user id
 @login_manager.user_loader
 def user_loader(user_id):
-    u = get_credentials(user_id)
+    u = get_credentials(user_id) #User from database
     if u is None:
         return
 
-    # For a real app, we would load the User from a database or something
     user = User()
     user.id = user_id
     return user
